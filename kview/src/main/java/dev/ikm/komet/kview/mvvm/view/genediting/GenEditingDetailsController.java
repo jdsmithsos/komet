@@ -236,7 +236,8 @@ public class GenEditingDetailsController {
         //Set up the Listener to refresh the details area (After user hits submit button on the right side)
         EntityFacade finalSemantic = semantic;
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
-            if (evt.getEventType() == GenEditingEvent.PUBLISH && evt.getNid() == finalSemantic.nid()) {
+            if ((evt.getEventType() == GenEditingEvent.CREATE_PUBLISH_EVENT || evt.getEventType() == GenEditingEvent.EDIT_PUBLISH_EVENT)
+                    && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
                     // populate the semantic and its observable fields once saved
                     semanticEntityVersionLatest = retrieveCommittedLatestVersion(finalSemantic, getViewProperties());

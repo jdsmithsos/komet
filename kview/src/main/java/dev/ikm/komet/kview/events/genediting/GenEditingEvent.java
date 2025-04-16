@@ -8,7 +8,9 @@ import java.util.List;
 
 public class GenEditingEvent extends Evt {
 
-    public static final EvtType<GenEditingEvent> PUBLISH = new EvtType<>(Evt.ANY, "GEN_EDIT_PUBLISH_SEMANTIC");
+//    public static final EvtType<GenEditingEvent> PUBLISH = new EvtType<>(Evt.ANY, "GEN_EDIT_PUBLISH_SEMANTIC");
+    public static final EvtType<GenEditingEvent> CREATE_PUBLISH_EVENT = new EvtType<>(Evt.ANY, "GEN_EDIT_CREATE_SEMANTIC");
+    public static final EvtType<GenEditingEvent> EDIT_PUBLISH_EVENT = new EvtType<>(Evt.ANY, "GEN_EDIT_EDIT_SEMANTIC");
 
     private List<ObservableField<?>> list;
 

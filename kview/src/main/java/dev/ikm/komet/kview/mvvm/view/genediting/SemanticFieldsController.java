@@ -20,7 +20,6 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
-import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternCreationEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -51,12 +50,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CREATE_PUBLISH_EVENT;
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.EDIT_PUBLISH_EVENT;
 import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class SemanticFieldsController {
@@ -251,20 +250,23 @@ public class SemanticFieldsController {
             SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
             Transaction.forVersion(version).ifPresentOrElse(transaction -> {
                 commitTransactionTask(transaction);
+
+                var mode = semanticFieldsViewModel.getPropertyValue(MODE);
+
                 // EventBus implementation changes to refresh the details area if commit successful
+                // send the MODE in the event so the correct panel can be displayed for CREATE or EDIT
                 EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                        new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
+                        new GenEditingEvent(actionEvent.getSource(),
+                                mode == CREATE ? CREATE_PUBLISH_EVENT : EDIT_PUBLISH_EVENT,
+                                list, semantic.nid()));
+
+                if (mode == CREATE) {
+                    semanticFieldsViewModel.setPropertyValue(MODE, EDIT);
+                }
+
                 // refesh the pattern navigation
                 EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                         new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
-
-                // only send the SEMANTIC_CREATED event if in CREATE mode
-                if (semanticFieldsViewModel.getPropertyValue(MODE) == CREATE) {
-                    EvtBusFactory.getDefaultEvtBus().publish(semanticFieldsViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(actionEvent.getSource(), PropertyPanelEvent.SEMANTIC_CREATED));
-                } else if (semanticFieldsViewModel.getPropertyValue(MODE) == EDIT) {
-                    // TODO eventually fire event when edited
-                }
 
             }, () -> {
                 //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.

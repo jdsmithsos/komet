@@ -32,6 +32,7 @@ import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CREATE_PUBLISH_EVENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
@@ -66,10 +67,6 @@ public class PropertiesController {
         PROPERTY_PANE_OPEN,
     }
     private Pane currentEditPane;
-
-    private Pane closePropsPane;
-
-    private ClosePropertiesController closePropertiesController;
 
     @InjectViewModel
     private SimpleViewModel propertiesViewModel;
@@ -121,13 +118,23 @@ public class PropertiesController {
         Config closePropertiesConfig = new Config(this.getClass().getResource("close-properties.fxml"))
                 .addNamedViewModel(new NamedVm("propertiesViewModel", propertiesViewModel));
 
+        JFXNode<Pane, ClosePropertiesController> noSelectionMadeJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
+        var noSelectionMadeController = noSelectionMadeJfxNode.controller();
+
+        // change the heading on the top of the panel
+        noSelectionMadeController.setHeadingText("No Selection Made");
+        noSelectionMadeController.setSubtextLine2("to edit the Semantic Element");
+
         JFXNode<Pane, ClosePropertiesController> closePropsJfxNode = FXMLMvvmLoader.make(closePropertiesConfig);
 
-        closePropsPane = closePropsJfxNode.node();
-        closePropertiesController = closePropsJfxNode.controller();
         genEditingEventSubscriber = evt -> {
             LOG.info("Publish event type: " + evt.getEventType());
-            contentBorderPane.setCenter(closePropsJfxNode.node());
+
+            if (evt.getEventType() == CREATE_PUBLISH_EVENT) {
+                contentBorderPane.setCenter(closePropsJfxNode.node());
+            } else {
+                contentBorderPane.setCenter(noSelectionMadeJfxNode.node());
+            }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
@@ -148,17 +155,7 @@ public class PropertiesController {
                 semanticFieldsViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
                 contentBorderPane.setCenter(referenceComponentJfxNode.node());
             } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
-                // change the heading on the top of the panel
-                closePropertiesController.setHeadingText("No Selection Made");
-                closePropertiesController.setSubtextLine2("to edit the Semantic Element");
-                contentBorderPane.setCenter(closePropsPane);
-            } else if (evt.getEventType() == PropertyPanelEvent.SEMANTIC_CREATED) {
-                // TODO the closePropsPane is used for three events
-                // for the NO_SELECTION_PANEL above, perhaps it needs to be it's own instance because
-                // it is the one that has custom text
-                closePropertiesController.setHeadingText("Semantic Details Added");
-                closePropertiesController.setSubtextLine2("to edit the Semantic");
-                contentBorderPane.setCenter(closePropsPane);
+                contentBorderPane.setCenter(noSelectionMadeJfxNode.node());
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(propertiesViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, showPanelSubscriber);
