@@ -16,30 +16,26 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
-import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
-import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
+import org.carlfx.cognitive.loader.*;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
+import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class PropertiesController {
 
@@ -117,6 +113,7 @@ public class PropertiesController {
                     .addProperty(VIEW_PROPERTIES, propertiesViewModel.getObjectProperty(VIEW_PROPERTIES))
                     .addProperty(SEMANTIC, propertiesViewModel.getObjectProperty(SEMANTIC))
                     .addProperty(REF_COMPONENT, propertiesViewModel.getObjectProperty(REF_COMPONENT))
+                    .addProperty(MODE, propertiesViewModel.getObjectProperty(MODE))
                     .addProperty(FIELD_INDEX, -1);
         });
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
@@ -154,6 +151,13 @@ public class PropertiesController {
                 // change the heading on the top of the panel
                 closePropertiesController.setHeadingText("No Selection Made");
                 closePropertiesController.setSubtextLine2("to edit the Semantic Element");
+                contentBorderPane.setCenter(closePropsPane);
+            } else if (evt.getEventType() == PropertyPanelEvent.SEMANTIC_CREATED) {
+                // TODO the closePropsPane is used for three events
+                // for the NO_SELECTION_PANEL above, perhaps it needs to be it's own instance because
+                // it is the one that has custom text
+                closePropertiesController.setHeadingText("Semantic Details Added");
+                closePropertiesController.setSubtextLine2("to edit the Semantic");
                 contentBorderPane.setCenter(closePropsPane);
             }
         };

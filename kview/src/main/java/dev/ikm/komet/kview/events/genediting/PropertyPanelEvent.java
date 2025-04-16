@@ -32,6 +32,7 @@ public class PropertyPanelEvent extends Evt {
     public static final EvtType<PropertyPanelEvent> NO_SELECTION_MADE_PANEL = new EvtType<>(SHOW_PANEL, "NO_SELECTION_MADE_PANEL");
     public static final EvtType<PropertyPanelEvent> SHOW_EDIT_SINGLE_SEMANTIC_FIELD = new EvtType<>(SHOW_EDIT_SEMANTIC_FIELDS, "SHOW_EDIT_SINGLE_SEMANTIC_FIELD");
     public static final EvtType<PropertyPanelEvent> SHOW_ADD_REFERENCE_SEMANTIC_FIELD = new EvtType<>(SHOW_PANEL, "SHOW_ADD_REFERENCE_SEMANTIC_FIELD");
+    public static final EvtType<PropertyPanelEvent> SEMANTIC_CREATED = new EvtType<>(SHOW_PANEL, "SEMANTIC_CREATED");
 
     /*** private variables ***/
     private EntityFacade semantic;
