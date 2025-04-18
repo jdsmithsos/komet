@@ -16,13 +16,7 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.component.FieldDataType;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.Field;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -35,6 +29,7 @@ public final class ObservableField<T> implements Field<T> {
 
     SimpleObjectProperty<FieldRecord<T>> fieldProperty = new SimpleObjectProperty<>();
     SimpleObjectProperty<T> valueProperty = new SimpleObjectProperty<>();
+    private T originalValue;
 
     public final BooleanProperty refreshProperties = new SimpleBooleanProperty(false);
     public final boolean writeOnEveryChange;
@@ -44,6 +39,9 @@ public final class ObservableField<T> implements Field<T> {
         fieldProperty.set(fieldRecord);
         if (fieldRecord != null) {
             valueProperty.set(fieldRecord.value());
+
+            // save the originalValue for reset
+            originalValue = fieldRecord.value();
         }
         valueProperty.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -60,6 +58,17 @@ public final class ObservableField<T> implements Field<T> {
     }
     public ObservableField(FieldRecord<T> fieldRecord) {
         this(fieldRecord, true);
+    }
+
+    /**
+     * Reset will set the field property value to the original value.
+     */
+    public void reset() {
+        valueProperty.set(originalValue);
+    }
+
+    public void saveOriginalValue() {
+        originalValue = field().value();
     }
 
     private void handleValueChange(Object newValue) {
@@ -107,6 +116,10 @@ public final class ObservableField<T> implements Field<T> {
 
     public FieldRecord<T> field() {
         return fieldProperty.get();
+    }
+
+    public T originalValue() {
+        return originalValue;
     }
 
     @Override

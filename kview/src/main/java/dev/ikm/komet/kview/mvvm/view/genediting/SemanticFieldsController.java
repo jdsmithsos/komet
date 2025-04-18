@@ -16,16 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
-import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.calculteHashValue;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.generateHashValue;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -58,6 +48,15 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
+import static dev.ikm.komet.kview.events.pattern.PatternCreationEvent.PATTERN_CREATION_EVENT;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class SemanticFieldsController {
 
@@ -139,6 +138,9 @@ public class SemanticFieldsController {
         editFieldsVBox.getChildren().clear();
         updateStampVersions = true;
         submitButton.setDisable(true);
+
+        clearFormButton.setDisable(false);
+
         EntityFacade semantic = semanticFieldsViewModel.getPropertyValue(SEMANTIC);
         if (semantic != null) {
             StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
@@ -232,8 +234,12 @@ public class SemanticFieldsController {
     }
 
     @FXML
-    private void clearForm(ActionEvent actionEvent) {
-        actionEvent.consume();
+    private void clearForm() {
+        if (!observableFields.isEmpty()) {
+            for (var field : observableFields) {
+                field.reset();
+            }
+        }
     }
 
     @FXML
@@ -257,6 +263,10 @@ public class SemanticFieldsController {
                 // refesh the pattern navigation
                 EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                         new PatternCreationEvent(actionEvent.getSource(), PATTERN_CREATION_EVENT));
+
+                for (var field : observableFields) {
+                    field.saveOriginalValue();
+                }
             }, () -> {
                 //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
                 LOG.error("Unable to commit: Transaction for the given version does not exist.");
