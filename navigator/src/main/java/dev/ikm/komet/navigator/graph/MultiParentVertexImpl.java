@@ -17,12 +17,8 @@ package dev.ikm.komet.navigator.graph;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import dev.ikm.tinkar.common.alert.AlertStreams;
-import javafx.application.Platform;
-import javafx.scene.Node;
-import javafx.scene.control.TreeItem;
-import org.eclipse.collections.api.collection.ImmutableCollection;
 import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -34,6 +30,10 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.control.TreeItem;
+import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -310,12 +310,17 @@ public class MultiParentVertexImpl
             return true;
         }
         if (this.childLinks == null) {
-            if (this.graphController.getNavigator().isLeaf(nid)) {
-                leafStatus = LeafStatus.IS_LEAF;
-            } else {
-                leafStatus = LeafStatus.NOT_LEAF;
+            try {
+                if (this.graphController.getNavigator().isLeaf(nid)) {
+                    leafStatus = LeafStatus.IS_LEAF;
+                } else {
+                    leafStatus = LeafStatus.NOT_LEAF;
+                }
+                return leafStatus == LeafStatus.IS_LEAF;
+            } catch (IllegalStateException e) {
+                LOG.error("IllegalStateException in getNavigator().isLeaf()", e);
+                return true;
             }
-            return leafStatus == LeafStatus.IS_LEAF;
         }
         if (this.childLinks.isEmpty()) {
             leafStatus = LeafStatus.IS_LEAF;

@@ -15,20 +15,6 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.primitive.ImmutableLongList;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.tinkar.common.id.IntIdSet;
@@ -51,6 +37,20 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.primitive.ImmutableLongList;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,9 +127,10 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         for (StateSet stateSet : new StateSet[]{StateSet.ACTIVE, StateSet.ACTIVE_AND_INACTIVE, StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN,
                 StateSet.INACTIVE, StateSet.WITHDRAWN}) {
             CheckMenuItem item = new CheckMenuItem(stateSet.toUserString());
-            if (observableView.navigationCoordinate().getOriginalValue().vertexStates() == observableView.stampCoordinate().allowedStates()) {
-                item.setSelected(stateSet.equals(observableView.navigationCoordinate().getOriginalValue().vertexStates()));
-            }
+//            if (observableView.navigationCoordinate().getOriginalValue().vertexStates() == observableView.stampCoordinate().allowedStates()) {
+//                item.setSelected(stateSet.equals(observableView.navigationCoordinate().getOriginalValue().vertexStates()));
+//            }
+            item.setSelected(stateSet.equals(observableView.stampCoordinate().allowedStates()));
             item.setOnAction(event -> {
                 Platform.runLater(() -> {
                     observableView.setAllowedStates(stateSet);

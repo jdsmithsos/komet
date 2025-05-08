@@ -234,10 +234,44 @@ public class MultiParentGraphViewController implements RefreshListener {
 
     }
 
-    private void menuUpdate() {
-        ImmutableList<String> navigationPatternDescriptions = this.viewProperties.nodeView().calculator().
+    /**
+     * Attempting to determine if there is data in the calculator.
+     * Isn there a way to get a simple row count?
+     */
+    private boolean calculatorHasData() {
+        boolean hasData = true;
+        var nids = this.observableView.navigationCoordinate().navigationPatternNids();
+
+        if (nids != null && nids.size() == 1) {
+            var nidArray = nids.toArray();
+            var calculator = this.viewProperties.nodeView().calculator();
+            var descriptions = calculator.languageCalculator().getDescriptionsForComponent(nidArray[0]);
+
+            hasData = descriptions != null && !descriptions.isEmpty();
+        }
+
+        return hasData;
+    }
+
+    private String getNavLabel() {
+        var calculator = this.viewProperties.nodeView().calculator();
+        ImmutableList<String> navigationPatternDescriptions = calculator.
                 getPreferredDescriptionTextListForComponents(this.observableView.navigationCoordinate().navigationPatternNids());
-        this.navigationLabel.setText(navigationPatternDescriptions.toString());
+
+        var navLabelStr = navigationPatternDescriptions.toString();
+
+        return navLabelStr != null && !navLabelStr.startsWith("[-") ? navLabelStr : null;
+    }
+
+    private void menuUpdate() {
+        var navLabelStr = getNavLabel();
+
+        if (navLabelStr != null) {
+            this.navigationLabel.setText(navLabelStr);
+        } else {
+            this.navigationLabel.setText("No Data");
+        }
+
         refreshTaxonomy();
     }
 
@@ -636,28 +670,35 @@ public class MultiParentGraphViewController implements RefreshListener {
 
     private void refreshTaxonomy() {
         saveExpanded();
+        var hasData = getNavLabel() != null;
+        var calcHasData = calculatorHasData();
+
         Navigator navigator = new EmptyNavigator(this.getObservableView());
         try {
             navigator = new ViewNavigator(this.viewProperties.nodeView());
         } catch (IllegalStateException ex) {
             Dialogs.showErrorDialog("Error computing view navigator", "Do you have more that one premise type selected?", ex, topGridPane.getScene().getWindow());
         }
+
         this.navigatorProperty.set(navigator);
         this.rootTreeItem.clearChildren();
-        if (this.navigatorProperty.get().getRootNids().length > 1) {
-            LOG.error("To many roots: " + this.navigatorProperty.get().getRootNids());
-        }
-        for (int rootNid : this.navigatorProperty.get().getRootNids()) {
-            MultiParentVertexImpl graphRoot = new MultiParentVertexImpl(
-                    Entity.getFast(rootNid),
-                    MultiParentGraphViewController.this,
-                    IntIds.set.empty(),
-                    Icon.TAXONOMY_ROOT_ICON.makeIcon());
-            this.rootTreeItem.getChildren().add(graphRoot);
-        }
-        for (TreeItem<ConceptFacade> rootChild : this.rootTreeItem.getChildren()) {
-            ((MultiParentVertexImpl) rootChild).clearChildren();
-            TinkExecutor.threadPool().execute(() -> ((MultiParentVertexImpl) rootChild).addChildren());
+
+        if (hasData) {
+            if (this.navigatorProperty.get().getRootNids().length > 1) {
+                LOG.error("To many roots: " + this.navigatorProperty.get().getRootNids());
+            }
+            for (int rootNid : this.navigatorProperty.get().getRootNids()) {
+                MultiParentVertexImpl graphRoot = new MultiParentVertexImpl(
+                        Entity.getFast(rootNid),
+                        MultiParentGraphViewController.this,
+                        IntIds.set.empty(),
+                        Icon.TAXONOMY_ROOT_ICON.makeIcon());
+                this.rootTreeItem.getChildren().add(graphRoot);
+            }
+            for (TreeItem<ConceptFacade> rootChild : this.rootTreeItem.getChildren()) {
+                ((MultiParentVertexImpl) rootChild).clearChildren();
+                TinkExecutor.threadPool().execute(() -> ((MultiParentVertexImpl) rootChild).addChildren());
+            }
         }
 
         this.rootTreeItem.invalidate();
