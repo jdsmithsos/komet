@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.property.Property;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import javafx.beans.property.Property;
 
 public interface PropertyWithOverride<T> extends Property<T> {
     boolean isOverridden();
@@ -32,4 +32,7 @@ public interface PropertyWithOverride<T> extends Property<T> {
     default String getOverrideName(ViewCalculator viewCalculator) {
         return viewCalculator.toPreferredEntityStringOrInputString(getName());
     }
+
+    void setValueWithOverride(T value);
+
 }

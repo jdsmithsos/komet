@@ -171,6 +171,11 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
     }
 
     @Override
+    public void setValueWithOverride(Number newValue) {
+        super.setValue(newValue);
+    }
+
+    @Override
     public void setValue(Number v) {
         if (v == null) {
             privateSet(overriddenProperty.get());

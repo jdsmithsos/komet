@@ -108,6 +108,11 @@ public class ObjectPropertyWithOverride<T> extends SimpleEqualityBasedObjectProp
     }
 
     @Override
+    public void setValueWithOverride(T newValue) {
+        super.setValue(newValue);
+    }
+
+    @Override
     public void setValue(T v) {
         privateSet(v);
     }

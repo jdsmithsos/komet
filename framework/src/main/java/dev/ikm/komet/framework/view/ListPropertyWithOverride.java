@@ -52,8 +52,10 @@ public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty
         return this.overriddenProperty;
     }
 
+    /// The super.setValue() method actually calls set().  With this new setValueWithOverride() method,
+    /// the set() method does not need to be overridden in ListPropertyWithOverride.
     @Override
-    public void set(ObservableList<T> newValue) {
+    public void setValueWithOverride(ObservableList<T> newValue) {
         if (!overridden && newValue != null) {
             overridden = true;
             this.unbind();

@@ -465,7 +465,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             changeLanguageMenu.getItems().add(languageItem);
             languageItem.setSelected(language.nid() == observableCoordinate.languageConceptProperty().get().nid());
             languageItem.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.languageConceptProperty().setValue(language));
+                Platform.runLater(() -> {
+                    if (observableCoordinate instanceof ObservableLanguageCoordinateWithOverride observableCoordinateWithOverride) {
+                        observableCoordinateWithOverride.languageConceptProperty().setValueWithOverride(language);
+                    } else {
+                        observableCoordinate.languageConceptProperty().setValue(language);
+                    }
+                });
                 event.consume();
             });
         }
@@ -481,7 +487,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             dialectOrderItem.setSelected(observableCoordinate.dialectPatternPreferenceListProperty().getValue().equals(dialectPreferenceList.castToList()));
             dialectOrderItem.setOnAction(event -> {
                 ObservableList<PatternFacade> prefList = FXCollections.observableArrayList(dialectPreferenceList.toArray(new PatternFacade[0]));
-                Platform.runLater(() -> observableCoordinate.dialectPatternPreferenceListProperty().setValue(prefList));
+                Platform.runLater(() -> {
+                    if (observableCoordinate instanceof ObservableLanguageCoordinateWithOverride observableCoordinateWithOverride) {
+                        observableCoordinateWithOverride.dialectPatternPreferenceListProperty().setValueWithOverride(prefList);
+                    } else {
+                        observableCoordinate.dialectPatternPreferenceListProperty().setValue(prefList);
+                    }
+                });
                 event.consume();
             });
         }
@@ -598,9 +610,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                 }
 
                 ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
-                Platform.runLater(() ->
-                        languageCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
-                );
+                Platform.runLater(() -> {
+                    if (languageCoordinate instanceof ObservableLanguageCoordinateWithOverride observableCoordinateWithOverride) {
+                        observableCoordinateWithOverride.descriptionTypePreferenceListProperty().setValueWithOverride(prefList);
+                    } else {
+                        languageCoordinate.descriptionTypePreferenceListProperty().setValue(prefList);
+                    }
+                });
                 event.consume();
             });
         }
