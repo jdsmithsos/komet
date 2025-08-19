@@ -52,11 +52,22 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
         this.set(null);
     }
 
-    /// The super.setValue() method actually calls set().  With this new setValueWithOverride() method,
-    /// the set() method does not need to be overridden in SetPropertyWithOverride.
+    @Override
+    public void set(ObservableSet<T> newValue) {
+        overridden = false;
+        if (newValue != null) {
+            this.unbind();
+        }
+        if (newValue == null) {
+            this.bind(overriddenProperty);
+        } else {
+            super.set(newValue);
+        }
+    }
+
     @Override
     public void setValueWithOverride(ObservableSet<T> newValue) {
-        if (!overridden) {
+        if (!overridden && newValue != null) {
             overridden = true;
             this.unbind();
         }

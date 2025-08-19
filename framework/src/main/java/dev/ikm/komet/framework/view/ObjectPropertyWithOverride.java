@@ -80,13 +80,15 @@ public class ObjectPropertyWithOverride<T> extends SimpleEqualityBasedObjectProp
 
     @Override
     public void set(T newValue) {
-        privateSet(newValue);
+        privateSetNoOverride(newValue);
     }
 
-    private void privateSet(T newValue) {
+    /// This is intended to set the value without override.  This set should come from the Journal window parent
+    /// view coordinate menu.
+    private void privateSetNoOverride(T newValue) {
         this.oldValue = get();
+        this.overridden = false;
         if (newValue == null) {
-            this.overridden = false;
             if (this.oldValue != null) {
                 super.set(null);
                 if (this.oldValue != null &! this.oldValue.equals(this.overriddenProperty.get())) {
@@ -96,25 +98,33 @@ public class ObjectPropertyWithOverride<T> extends SimpleEqualityBasedObjectProp
             }
         } else if (newValue.equals(this.overriddenProperty.get())) {
             // values equal so not an override.
-            this.overridden = false;
             super.set(null);
         } else {
             // values not equal
-             super.set(newValue);
-            this.overridden = true;
+            super.set(newValue);
             invalidated();
             fireValueChangedEvent();
         }
     }
 
+    /// This is intended to set the value knowing it is an override.  This should only be called
+    /// from ViewMenuTask.
     @Override
     public void setValueWithOverride(T newValue) {
-        super.setValue(newValue);
+        if (newValue != null && !newValue.equals(this.overriddenProperty.get())) {
+            // values not equal
+            super.set(newValue);
+            this.overridden = true;
+            invalidated();
+            fireValueChangedEvent();
+        } else {
+            privateSetNoOverride(newValue);
+        }
     }
 
     @Override
     public void setValue(T v) {
-        privateSet(v);
+        privateSetNoOverride(v);
     }
 
     @Override

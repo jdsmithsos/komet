@@ -153,6 +153,8 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
         privateSet(newValue);
     }
 
+    /// Because this property is a simple primitive, the overridden flag can be determined
+    /// here.
     private void privateSet(long newValue) {
         this.oldValue = get();
         if (newValue == this.overriddenProperty.getValue()) {
