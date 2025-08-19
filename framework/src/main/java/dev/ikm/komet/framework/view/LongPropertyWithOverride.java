@@ -65,6 +65,7 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
     @Override
     public void removeOverride() {
         this.setValue(null);
+        overridden = false;
     }
 
     private void overriddenPropertyChanged(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -153,37 +154,37 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
         privateSet(newValue);
     }
 
-    /// Because this property is a simple primitive, the overridden flag can be determined
-    /// here.
+    /// privateSet() should only be called because the user changed view coordinates in
+    /// the Journal parent view coordinates menu
     private void privateSet(long newValue) {
         this.oldValue = get();
-        if (newValue == this.overriddenProperty.getValue()) {
-            this.overridden = false;
-            if (this.oldValue != null && !this.oldValue.equals(this.overriddenProperty.get())) {
+
+        if (overriddenProperty.get() != newValue) {
+            overriddenProperty.set(newValue);
+
+            if (!overridden) {
                 invalidated();
                 fireValueChangedEvent();
             }
-        } else {
-            // values not equal
-            super.set(newValue);
-            this.overridden = true;
-            invalidated();
-            fireValueChangedEvent();
         }
     }
 
+    /// setValueWithOverride() should only be called from ViewMenuTask
     @Override
     public void setValueWithOverride(Number newValue) {
-        super.setValue(newValue);
+        if (newValue != null) {
+            super.set(newValue.longValue());
+            this.overridden = true;
+            invalidated();
+            fireValueChangedEvent();
+        } else {
+            overridden = false;
+        }
     }
 
     @Override
     public void setValue(Number v) {
-        if (v == null) {
-            privateSet(overriddenProperty.get());
-        } else {
-            privateSet(v.longValue());
-        }
+        privateSet(v.longValue());
     }
 
     @Override

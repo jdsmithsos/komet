@@ -22,6 +22,7 @@ import javafx.collections.ObservableSet;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.Predicate;
 
 public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<T>
@@ -49,33 +50,28 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
 
     @Override
     public void removeOverride() {
-        this.set(null);
+        overridden = false;
+        this.bind(overriddenProperty);
     }
 
     @Override
     public void set(ObservableSet<T> newValue) {
-        overridden = false;
         if (newValue != null) {
-            this.unbind();
-        }
-        if (newValue == null) {
-            this.bind(overriddenProperty);
-        } else {
-            super.set(newValue);
+            overriddenProperty.set(newValue);
         }
     }
 
+    /// setValueWithOverride() should only be called from ViewMenuTask
     @Override
     public void setValueWithOverride(ObservableSet<T> newValue) {
-        if (!overridden && newValue != null) {
+        if (newValue != null) {
             overridden = true;
             this.unbind();
-        }
-        if (newValue == null) {
+
+            super.set(newValue);
+        } else {
             overridden = false;
             this.bind(overriddenProperty);
-        } else {
-            super.set(newValue);
         }
     }
 
@@ -84,16 +80,11 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
         return setAll(Arrays.asList(elements));
     }
 
+    /// setAll() is called when the NoOverride sends property change event to the WithOverride
     @Override
     public boolean setAll(Collection<? extends T> elements) {
-        if (!this.get().equals(elements)) {
-            if (!overridden) {
-                overridden = true;
-                this.unbind();
-            }
-            return super.setAll(elements);
-        }
-        return false;
+        overriddenProperty.set(FXCollections.observableSet(new HashSet<>(elements)));
+        return true;
     }
 
     @Override

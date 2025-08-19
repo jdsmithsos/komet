@@ -62,7 +62,10 @@ public class ObjectPropertyWithOverride<T> extends SimpleEqualityBasedObjectProp
 
     @Override
     public void removeOverride() {
-        this.set(null);
+        overridden = false;
+        super.set(null);
+        invalidated();
+        fireValueChangedEvent();
     }
 
     @Override
@@ -87,39 +90,27 @@ public class ObjectPropertyWithOverride<T> extends SimpleEqualityBasedObjectProp
     /// view coordinate menu.
     private void privateSetNoOverride(T newValue) {
         this.oldValue = get();
-        this.overridden = false;
-        if (newValue == null) {
-            if (this.oldValue != null) {
-                super.set(null);
-                if (this.oldValue != null &! this.oldValue.equals(this.overriddenProperty.get())) {
-                    invalidated();
-                    fireValueChangedEvent();
-                }
-            }
-        } else if (newValue.equals(this.overriddenProperty.get())) {
-            // values equal so not an override.
-            super.set(null);
-        } else {
-            // values not equal
-            super.set(newValue);
+        this.overriddenProperty.set(newValue);
+
+        if (!overridden) {
             invalidated();
             fireValueChangedEvent();
         }
     }
 
-    /// This is intended to set the value knowing it is an override.  This should only be called
-    /// from ViewMenuTask.
+    /// setValueWithOverride() should only be called from ViewMenuTask
     @Override
     public void setValueWithOverride(T newValue) {
-        if (newValue != null && !newValue.equals(this.overriddenProperty.get())) {
-            // values not equal
+        if (newValue != null) {
+            overridden = true;
             super.set(newValue);
-            this.overridden = true;
-            invalidated();
-            fireValueChangedEvent();
         } else {
-            privateSetNoOverride(newValue);
+            overridden = false;
+            super.set(null);
         }
+
+        invalidated();
+        fireValueChangedEvent();
     }
 
     @Override

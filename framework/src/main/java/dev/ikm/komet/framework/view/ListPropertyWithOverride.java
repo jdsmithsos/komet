@@ -44,7 +44,8 @@ public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty
 
     @Override
     public void removeOverride() {
-        this.set(null);
+        overridden = false;
+        this.bind(overriddenProperty);
     }
 
     @Override
@@ -52,30 +53,26 @@ public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty
         return this.overriddenProperty;
     }
 
+    /// set() should only be called because the user changed view coordinates in
+    /// the Journal parent view coordinates menu
     @Override
     public void set(ObservableList<T> newValue) {
-        overridden = false;
         if (newValue != null) {
-            this.unbind();
-        }
-        if (newValue == null) {
-            this.bind(overriddenProperty);
-        } else {
-            super.set(newValue);
+            overriddenProperty.set(newValue);
         }
     }
 
+    /// setValueWithOverride() should only be called from ViewMenuTask
     @Override
     public void setValueWithOverride(ObservableList<T> newValue) {
-        if (!overridden && newValue != null) {
+        if (newValue != null) {
             overridden = true;
             this.unbind();
-        }
-        if (newValue == null) {
+
+            super.set(newValue);
+        } else {
             overridden = false;
             this.bind(overriddenProperty);
-        } else {
-            super.set(newValue);
         }
     }
 
@@ -84,16 +81,11 @@ public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty
         return setAll(Arrays.asList(elements));
     }
 
+    /// setAll() is called when the NoOverride sends property change event to the WithOverride
     @Override
     public boolean setAll(Collection<? extends T> elements) {
-        if (!this.get().equals(elements)) {
-            if (!overridden) {
-                overridden = true;
-                this.unbind();
-            }
-            return super.setAll(elements);
-        }
-        return false;
+        overriddenProperty.setAll(elements);
+        return true;
     }
 
     @Override
