@@ -114,7 +114,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setUserData(FxGet.pathCoordinates(viewCalculator).get(key));
             item.setOnAction(event -> {
                 StampPathImmutable path = (StampPathImmutable) item.getUserData();
-                Platform.runLater(() -> observableCoordinate.pathConceptProperty().setValue(Entity.getFast(path.pathConceptNid())));
+                Platform.runLater(() -> {
+                    if (observableCoordinate instanceof ObservableStampCoordinateWithOverride observableCoordinateWithOverride) {
+                        observableCoordinateWithOverride.pathConceptProperty().setValueWithOverride(Entity.getFast(path.pathConceptNid()));
+                    } else {
+                        observableCoordinate.pathConceptProperty().setValue(Entity.getFast(path.pathConceptNid()));
+                    }
+                });
                 event.consume();
             });
             changePathMenu.getItems().add(item);
@@ -158,7 +164,11 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setSelected(statusSet.equals(statusProperty.get()));
             item.setOnAction(event -> {
                 Platform.runLater(() -> {
-                    statusProperty.setValue(statusSet);
+                    if (statusProperty instanceof ObjectPropertyWithOverride statusPropertyWithOverride) {
+                        statusPropertyWithOverride.setValueWithOverride(statusSet);
+                    } else {
+                        statusProperty.setValue(statusSet);
+                    }
                 });
                 event.consume();
             });
@@ -169,14 +179,24 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     private static void addChangePositionForManifold(List<MenuItem> menuItems, ObservableView observableView) {
         addChangePositionMenu(menuItems, time -> {
             Platform.runLater(() -> {
-                observableView.stampCoordinate().timeProperty().setValue(time);
+                if (observableView instanceof ObservableViewWithOverride observableViewWithOverride) {
+                    observableViewWithOverride.stampCoordinate().timeProperty().setValueWithOverride(time);
+                } else {
+                    observableView.stampCoordinate().timeProperty().setValue(time);
+                }
             });
         });
     }
 
     private static void addChangePositionForFilter(List<MenuItem> menuItems, ObservableStampCoordinate observableCoordinate) {
         addChangePositionMenu(menuItems, time -> {
-            Platform.runLater(() -> observableCoordinate.timeProperty().setValue(time));
+            Platform.runLater(() -> {
+                if (observableCoordinate instanceof ObservableStampCoordinateWithOverride observableCoordinateWithOverride) {
+                    observableCoordinateWithOverride.timeProperty().setValueWithOverride(time);
+                } else {
+                    observableCoordinate.timeProperty().setValue(time);
+                }
+            });
         });
     }
 
@@ -264,7 +284,12 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             Platform.runLater(() -> {
                 ObservableSet<ConceptFacade> newSet = FXCollections.observableSet();
                 newSet.addAll(StampService.get().getModulesInUse().castToSet());
-                observableCoordinate.moduleSpecificationsProperty().setValue(newSet);
+
+                if (observableCoordinate instanceof ObservableStampCoordinateWithOverride observableCoordinateWithOverride) {
+                    observableCoordinateWithOverride.moduleSpecificationsProperty().setValueWithOverride(newSet);
+                } else {
+                    observableCoordinate.moduleSpecificationsProperty().setValue(newSet);
+                }
             });
             event.consume();
         });
@@ -314,6 +339,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         if (excludeAllIndividualModulesItem.isSelected()) {
             excludeAllIndividualModulesItem.setOnAction(event -> {
                 Platform.runLater(() -> {
+                    // TODO withOverride??
                     observableCoordinate.excludedModuleSpecificationsProperty().clear();
                 });
                 event.consume();
@@ -323,7 +349,12 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                 Platform.runLater(() -> {
                     ObservableSet<ConceptFacade> newSet = FXCollections.observableSet();
                     newSet.addAll(StampService.get().getModulesInUse().castToSet());
-                    observableCoordinate.excludedModuleSpecificationsProperty().setValue(newSet);
+
+                    if (observableCoordinate instanceof ObservableStampCoordinateWithOverride observableCoordinateWithOverride) {
+                        observableCoordinateWithOverride.excludedModuleSpecificationsProperty().setValueWithOverride(newSet);
+                    } else {
+                        observableCoordinate.excludedModuleSpecificationsProperty().setValue(newSet);
+                    }
                 });
                 event.consume();
             });
@@ -334,6 +365,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             if (item.isSelected()) {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
+                        // TODO withOverride??
                         observableCoordinate.excludedModuleSpecificationsProperty().remove(moduleConcept);
                     });
                     event.consume();
@@ -341,6 +373,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             } else {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
+                        // TODO withOverride??
                         observableCoordinate.excludedModuleSpecificationsProperty().add(moduleConcept);
                     });
                     event.consume();
@@ -362,7 +395,11 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setSelected(observableCoordinate.getAuthorNidForChanges() == author);
             changeAuthorMenu.getItems().add(item);
             item.setOnAction(event -> {
-                observableCoordinate.authorForChangesProperty().setValue(EntityProxy.Concept.make(author));
+                if (observableCoordinate instanceof ObservableEditCoordinateWithOverride observableCoordinateWithOverride) {
+                    observableCoordinateWithOverride.authorForChangesProperty().setValueWithOverride(EntityProxy.Concept.make(author));
+                } else {
+                    observableCoordinate.authorForChangesProperty().setValue(EntityProxy.Concept.make(author));
+                }
                 event.consume();
             });
         }
@@ -377,7 +414,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setSelected(observableCoordinate.getDefaultModuleNid() == module.nid());
             changeDefaultModuleMenu.getItems().add(item);
             item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.defaultModuleProperty().setValue(module));
+                Platform.runLater(() -> {
+                    if (observableCoordinate instanceof ObservableEditCoordinateWithOverride observableCoordinateWithOverride) {
+                        observableCoordinateWithOverride.defaultModuleProperty().setValueWithOverride(module);
+                    } else {
+                        observableCoordinate.defaultModuleProperty().setValue(module);
+                    }
+                });
                 event.consume();
             });
         }
@@ -391,7 +434,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setSelected(observableCoordinate.getDestinationModuleNid() == module.nid());
             changeDestinationModuleMenu.getItems().add(item);
             item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.promotionPathProperty().setValue(module));
+                Platform.runLater(() -> {
+                    if (observableCoordinate instanceof ObservableEditCoordinateWithOverride observableCoordinateWithOverride) {
+                        observableCoordinateWithOverride.promotionPathProperty().setValueWithOverride(module);
+                    } else {
+                        observableCoordinate.promotionPathProperty().setValue(module);
+                    }
+                });
                 event.consume();
             });
         }
@@ -405,7 +454,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setSelected(observableCoordinate.getPromotionPathNid() == path.pathConceptNid());
             changePromotionPathMenu.getItems().add(item);
             item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.promotionPathProperty().setValue(EntityProxy.Concept.make(path.pathConceptNid())));
+                Platform.runLater(() -> {
+                    if (observableCoordinate instanceof ObservableEditCoordinateWithOverride observableCoordinateWithOverride) {
+                        observableCoordinateWithOverride.promotionPathProperty().setValueWithOverride(EntityProxy.Concept.make(path.pathConceptNid()));
+                    } else {
+                        observableCoordinate.promotionPathProperty().setValue(EntityProxy.Concept.make(path.pathConceptNid()));
+                    }
+                });
                 event.consume();
             });
         }
@@ -438,7 +493,12 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
                         ObservableSet<PatternFacade> newSet = FXCollections.observableSet(navOption.toArray(new PatternFacade[navOption.size()]));
-                        observableCoordinate.navigationPatternsProperty().setValue(newSet);
+
+                        if (observableCoordinate instanceof ObservableNavigationCoordinateWithOverride observableCoordinateWithOverride) {
+                            observableCoordinateWithOverride.navigationPatternsProperty().setValueWithOverride(newSet);
+                        } else {
+                            observableCoordinate.navigationPatternsProperty().setValue(newSet);
+                        }
                     });
                     event.consume();
                 });
@@ -566,8 +626,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             CheckMenuItem item = new CheckMenuItem(vertexSort.getVertexSortName());
             item.setSelected(observableView.navigationCoordinate().sortVerticesProperty().equals(vertexSort));
             item.setOnAction(event -> {
-                Platform.runLater(() ->
-                        observableView.navigationCoordinate().sortVerticesProperty().setValue(vertexSort == VertexSortNaturalOrder.SINGLETON));
+                Platform.runLater(() -> {
+                    if (observableView instanceof ObservableViewWithOverride observableViewWithOverride) {
+                        observableViewWithOverride.navigationCoordinate().sortVerticesProperty().setValueWithOverride(vertexSort == VertexSortNaturalOrder.SINGLETON);
+                    } else {
+                        observableView.navigationCoordinate().sortVerticesProperty().setValue(vertexSort == VertexSortNaturalOrder.SINGLETON);
+                    }
+                });
                 event.consume();
             });
             changeVertexSortMenu.getItems().add(item);
@@ -611,8 +676,8 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
 
                 ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
                 Platform.runLater(() -> {
-                    if (languageCoordinate instanceof ObservableLanguageCoordinateWithOverride observableCoordinateWithOverride) {
-                        observableCoordinateWithOverride.descriptionTypePreferenceListProperty().setValueWithOverride(prefList);
+                    if (languageCoordinate instanceof ObservableLanguageCoordinateWithOverride languageCoordinateWithOverride) {
+                        languageCoordinateWithOverride.descriptionTypePreferenceListProperty().setValueWithOverride(prefList);
                     } else {
                         languageCoordinate.descriptionTypePreferenceListProperty().setValue(prefList);
                     }
